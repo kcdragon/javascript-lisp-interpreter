@@ -34,8 +34,11 @@ class Interpreter {
                 return result / interpreter._result(operand)
             }, interpreter._result(expression[1]))
         }
+        else if (expression[0] == "eql") {
+            return this._result(expression[1]) == this._result(expression[2])
+        }
         else {
-            throw "Operation " + expression[0] + " is not supported"
+            throw "Operation '" + expression[0] + "' is not supported"
         }
     }
 }

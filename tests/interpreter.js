@@ -32,3 +32,14 @@ QUnit.test("Interpreter#result nested lists", function(assert) {
         6
     )
 });
+
+QUnit.test("Interpreter#result equality - 'eql'", function(assert) {
+    assert.equal(
+        new Interpreter(["eql", 1, 1]).result(),
+        true
+    )
+    assert.equal(
+        new Interpreter(["eql", 1, 2]).result(),
+        false
+    )
+});
