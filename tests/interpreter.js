@@ -1,0 +1,27 @@
+QUnit.test("Interpreter#result addition", function(assert) {
+    assert.equal(
+        new Interpreter(["+", 1, 1]).result(),
+        2
+    )
+});
+
+QUnit.test("Interpreter#result subtraction", function(assert) {
+    assert.equal(
+        new Interpreter(["-", 2, 1]).result(),
+        1
+    )
+});
+
+QUnit.test("Interpreter#result multiplication", function(assert) {
+    assert.equal(
+        new Interpreter(["*", 3, 2]).result(),
+        6
+    )
+});
+
+QUnit.test("Interpreter#result division", function(assert) {
+    assert.equal(
+        new Interpreter(["/", 3, 2]).result(),
+        1.5
+    )
+});
