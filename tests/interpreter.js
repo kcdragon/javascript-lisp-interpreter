@@ -25,3 +25,10 @@ QUnit.test("Interpreter#result division", function(assert) {
         1.5
     )
 });
+
+QUnit.test("Interpreter#result nested lists", function(assert) {
+    assert.equal(
+        new Interpreter(["*", ["+", 1, 1], 3]).result(),
+        6
+    )
+});

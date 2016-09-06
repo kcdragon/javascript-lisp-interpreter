@@ -4,28 +4,38 @@ class Interpreter {
     }
 
     result() {
-        if (this.expression[0] == "+") {
-            return this.expression.slice(1).reduce(function (sum, operand) {
-                return sum + operand
+        return this._result(this.expression)
+    }
+
+    _result(expression) {
+        var interpreter = this
+
+        if (!(expression instanceof Array)) {
+            return expression
+        }
+
+        if (expression[0] == "+") {
+            return expression.slice(1).reduce(function (sum, operand) {
+                return sum + interpreter._result(operand)
             }, 0)
         }
-        else if (this.expression[0] == "-") {
-            return this.expression.slice(2).reduce(function (result, operand) {
-                return result - operand
-            }, this.expression[1])
+        else if (expression[0] == "-") {
+            return expression.slice(2).reduce(function (result, operand) {
+                return result - interpreter._result(operand)
+            }, interpreter._result(expression[1]))
         }
-        else if (this.expression[0] == "*") {
-            return this.expression.slice(1).reduce(function (result, operand) {
-                return result * operand
+        else if (expression[0] == "*") {
+            return expression.slice(1).reduce(function (result, operand) {
+                return result * interpreter._result(operand)
             }, 1)
         }
-        else if (this.expression[0] == "/") {
-            return this.expression.slice(2).reduce(function (result, operand) {
-                return result / operand
-            }, this.expression[1])
+        else if (expression[0] == "/") {
+            return expression.slice(2).reduce(function (result, operand) {
+                return result / interpreter._result(operand)
+            }, interpreter._result(expression[1]))
         }
         else {
-            throw "Operation " + this.expression[0] + " is not supported"
+            throw "Operation " + expression[0] + " is not supported"
         }
     }
 }
