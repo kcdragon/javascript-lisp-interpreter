@@ -18,3 +18,17 @@ QUnit.test("Lexer#tokens floating point number", function(assert) {
         ["(", "+", 1.1, 1.2, ")"]
     )
 });
+
+QUnit.test("Lexer#tokens string", function(assert) {
+    assert.deepEqual(
+        new Lexer('(string "hello")').tokens(),
+        ["(", "string", "hello", ")"]
+    )
+});
+
+QUnit.test("Lexer#tokens string with space", function(assert) {
+    assert.deepEqual(
+        new Lexer('(string "hello world")').tokens(),
+        ["(", "string", "hello world", ")"]
+    )
+});
