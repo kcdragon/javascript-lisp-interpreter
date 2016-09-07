@@ -44,6 +44,15 @@ class Interpreter {
         else if (expression[0] == "not") {
             return !this._result(expression[1])
         }
+        else if (expression[0] == "list") {
+            return this._evaluateList(expression.slice(1))
+        }
+        else if (expression[0] == "car") {
+            return this._result(expression[1])[0]
+        }
+        else if (expression[0] == "cdr") {
+            return this._result(expression[1]).slice(1)
+        }
         else {
             throw "Operation '" + expression[0] + "' is not supported"
         }

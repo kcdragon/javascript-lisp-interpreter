@@ -76,3 +76,36 @@ QUnit.test("Interpreter#result 'not' operator", function(assert) {
         true
     )
 });
+
+QUnit.test("Interpreter#result 'list' operator", function(assert) {
+    assert.deepEqual(
+        new Interpreter(["list", 1, 2, 3]).result(),
+        [1, 2, 3]
+    )
+    assert.deepEqual(
+        new Interpreter(["list", 1, ["list", 2, 3], 4]).result(),
+        [1, [2, 3], 4]
+    )
+});
+
+QUnit.test("Interpreter#result 'car' operator", function(assert) {
+    assert.deepEqual(
+        new Interpreter(["car", ["list", 1, 2, 3]]).result(),
+        1
+    )
+    assert.deepEqual(
+        new Interpreter(["car", ["list", ["+", 1, 1], 3]]).result(),
+        2
+    )
+});
+
+QUnit.test("Interpreter#result 'cdr' operator", function(assert) {
+    assert.deepEqual(
+        new Interpreter(["cdr", ["list", 1, 2, 3]]).result(),
+        [2, 3]
+    )
+    assert.deepEqual(
+        new Interpreter(["cdr", ["list", 1, ["list", 2, 3]]]).result(),
+        [[2, 3]]
+    )
+});
