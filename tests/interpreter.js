@@ -43,3 +43,36 @@ QUnit.test("Interpreter#result equality - 'eql'", function(assert) {
         false
     )
 });
+
+QUnit.test("Interpreter#result 'and' operator", function(assert) {
+    assert.equal(
+        new Interpreter(["and", ["eql", 1, 1], ["eql", 2, 2]]).result(),
+        true
+    )
+    assert.equal(
+        new Interpreter(["and", ["eql", 1, 1], ["eql", 1, 2]]).result(),
+        false
+    )
+});
+
+QUnit.test("Interpreter#result 'or' operator", function(assert) {
+    assert.equal(
+        new Interpreter(["or", ["eql", 1, 1], ["eql", 1, 2]]).result(),
+        true
+    )
+    assert.equal(
+        new Interpreter(["or", ["eql", 2, 1], ["eql", 1, 2]]).result(),
+        false
+    )
+});
+
+QUnit.test("Interpreter#result 'not' operator", function(assert) {
+    assert.equal(
+        new Interpreter(["not", ["eql", 1, 1]]).result(),
+        false
+    )
+    assert.equal(
+        new Interpreter(["not", ["eql", 1, 2]]).result(),
+        true
+    )
+});

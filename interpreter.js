@@ -35,6 +35,15 @@ class Interpreter {
         else if (expression[0] == "eql") {
             return this._result(expression[1]) == this._result(expression[2])
         }
+        else if (expression[0] == "and") {
+            return this._result(expression[1]) && this._result(expression[2])
+        }
+        else if (expression[0] == "or") {
+            return this._result(expression[1]) || this._result(expression[2])
+        }
+        else if (expression[0] == "not") {
+            return !this._result(expression[1])
+        }
         else {
             throw "Operation '" + expression[0] + "' is not supported"
         }
