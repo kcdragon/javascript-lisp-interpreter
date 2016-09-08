@@ -116,3 +116,10 @@ QUnit.test("Interpreter#result execute multiple expressions", function(assert) {
         3
     )
 });
+
+QUnit.test("Interpreter#result 'setq' - assign variable", function(assert) {
+    assert.equal(
+        new Interpreter([["setq", "a", 1], ["+", "a", 2]]).result(),
+        3
+    )
+});

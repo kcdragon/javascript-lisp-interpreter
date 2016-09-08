@@ -1,11 +1,21 @@
+class LispString {
+    constructor(string) {
+        this.string = string
+    }
+
+    string() {
+        return this.string
+    }
+}
+
 class Lexer {
     constructor(string) {
         this.string = string
     }
 
     tokens() {
-        return this._castNumbersToFloats(
-            this._removeDoubleQuotesFromStrings(
+        return this._removeDoubleQuotesFromStrings(
+            this._castNumbersToFloats(
                 this._removeEmptyTokens(
                     this.string.
                         replace(/\(/g, ' ( ').
@@ -24,7 +34,12 @@ class Lexer {
 
     _removeDoubleQuotesFromStrings(tokens) {
         return _.map(tokens, function (token) {
-            return token.replace(/^"/, '').replace(/"$/, '')
+            if (token.match && token.match(/^".*"$/)) {
+                return new LispString(token.replace(/^"/, '').replace(/"$/, ''))
+            }
+            else {
+                return token
+            }
         })
     }
 

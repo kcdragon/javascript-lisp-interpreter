@@ -34,6 +34,9 @@ environment["car"] = function (expression) {
 environment["cdr"] = function (expression) {
     return expression[0].slice(1)
 }
+environment["setq"] = function (expression) {
+    environment[expression[0]] = new Interpreter([expression[1]]).result()
+}
 
 class Interpreter {
     constructor(expression) {
@@ -48,6 +51,14 @@ class Interpreter {
     }
 
     _result(expression) {
+        if (expression instanceof Array && expression[0] == "setq") {
+            return environment[expression[0]](expression.slice(1))
+        }
+
+        if (typeof expression === "string") {
+            return environment[expression]
+        }
+
         if (!(expression instanceof Array)) {
             return expression
         }

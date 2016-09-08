@@ -22,14 +22,14 @@ QUnit.test("Lexer#tokens floating point number", function(assert) {
 QUnit.test("Lexer#tokens string", function(assert) {
     assert.deepEqual(
         new Lexer('(string "hello")').tokens(),
-        ["(", "string", "hello", ")"]
+        ["(", "string", new LispString("hello"), ")"]
     )
 });
 
 QUnit.test("Lexer#tokens string with space", function(assert) {
     assert.deepEqual(
         new Lexer('(string "hello world")').tokens(),
-        ["(", "string", "hello world", ")"]
+        ["(", "string", new LispString("hello world"), ")"]
     )
 });
 
