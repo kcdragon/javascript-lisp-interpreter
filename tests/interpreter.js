@@ -123,3 +123,30 @@ QUnit.test("Interpreter#result 'setq' - assign variable", function(assert) {
         3
     )
 });
+
+QUnit.test("Interpreter#result lambda function", function(assert) {
+    assert.equal(
+        typeof new Interpreter([["lambda", ["n"], ["+", "n", 1]]]).result(),
+        "function"
+    )
+});
+
+QUnit.test("Interpreter#result evaluate lambda", function(assert) {
+    assert.equal(
+        new Interpreter([[["lambda", ["n"], ["+", "n", 1]], 1]]).result(),
+        2
+    )
+});
+
+QUnit.test("Interpreter#result lambda scope", function(assert) {
+    assert.equal(
+        new Interpreter(
+            [
+                ["setq", "n", 2],
+                [["lambda", ["n"], ["+", "n", 1]], 1],
+                ["+", "n", 1]
+            ]
+        ).result(),
+        3
+    )
+});

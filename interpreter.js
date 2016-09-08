@@ -37,10 +37,25 @@ environment["cdr"] = function (expression) {
 environment["setq"] = function (expression) {
     environment[expression[0]] = new Interpreter([expression[1]]).result()
 }
+environment["lambda"] = function (expression) {
+    return function (args) {
+        // TODO if args.length !== expression[0].length throw error
+
+        var localEnvironment = {}
+        Object.keys(environment).forEach(function (key) {
+            localEnvironment[key] = environment[key]
+        })
+        args.forEach(function (arg, index) {
+            localEnvironment[expression[0][index]] = arg
+        })
+        return new Interpreter([expression[1]], localEnvironment).result()
+    }
+}
 
 class Interpreter {
-    constructor(expression) {
+    constructor(expression, env = environment) {
         this.expression = expression
+        this.env = env
     }
 
     result() {
@@ -51,23 +66,31 @@ class Interpreter {
     }
 
     _result(expression) {
-        if (expression instanceof Array && expression[0] == "setq") {
-            return environment[expression[0]](expression.slice(1))
-        }
-
+        console.log("expression: " + expression)
         if (typeof expression === "string") {
-            return environment[expression]
+            return this.env[expression]
         }
+        else if (expression instanceof Array) {
+            var operator = expression[0]
 
-        if (!(expression instanceof Array)) {
-            return expression
-        }
-
-        if (typeof environment[expression[0]] === "undefined") {
-            throw "Operation '" + expression[0] + "' is not supported"
+            if (typeof operator !== "string") {
+                return this._result(operator)(expression.slice(1))
+            }
+            if (operator === "setq") {
+                return this.env[operator](expression.slice(1))
+            }
+            else if (operator === "lambda") {
+                return this.env[operator](expression.slice(1))
+            }
+            else if (typeof this.env[operator] === "undefined") {
+                throw "Operation '" + operator + "' is not supported"
+            }
+            else {
+                return this.env[operator](this._evaluateList(expression.slice(1)))
+            }
         }
         else {
-            return environment[expression[0]](this._evaluateList(expression.slice(1)))
+            return expression
         }
     }
 
