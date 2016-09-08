@@ -1,3 +1,40 @@
+var environment = {}
+environment["+"] = function (expression) {
+    return expression.reduce(function (sum, operand) {
+        return sum + operand
+    }, 0)
+}
+environment["-"] = function (expression) {
+    return expression[0] - expression[1]
+}
+environment["*"] = function (expression) {
+    return expression[0] * expression[1]
+}
+environment["/"] = function (expression) {
+    return expression[0] / expression[1]
+}
+environment["eql"] = function (expression) {
+    return expression[0] == expression[1]
+}
+environment["and"] = function (expression) {
+    return expression[0] && expression[1]
+}
+environment["or"] = function (expression) {
+    return expression[0] || expression[1]
+}
+environment["not"] = function (expression) {
+    return !expression[0]
+}
+environment["list"] = function (expression) {
+    return expression
+}
+environment["car"] = function (expression) {
+    return expression[0][0]
+}
+environment["cdr"] = function (expression) {
+    return expression[0].slice(1)
+}
+
 class Interpreter {
     constructor(expression) {
         this.expression = expression
@@ -12,49 +49,11 @@ class Interpreter {
             return expression
         }
 
-        if (expression[0] == "+") {
-            return this._evaluateList(expression.slice(1)).reduce(function (sum, operand) {
-                return sum + operand
-            }, 0)
-        }
-        else if (expression[0] == "-") {
-            return this._evaluateList(expression.slice(2)).reduce(function (result, operand) {
-                return result - operand
-            }, this._result(expression[1]))
-        }
-        else if (expression[0] == "*") {
-            return this._evaluateList(expression.slice(1)).reduce(function (result, operand) {
-                return result * operand
-            }, 1)
-        }
-        else if (expression[0] == "/") {
-            return this._evaluateList(expression.slice(2)).reduce(function (result, operand) {
-                return result / operand
-            }, this._result(expression[1]))
-        }
-        else if (expression[0] == "eql") {
-            return this._result(expression[1]) == this._result(expression[2])
-        }
-        else if (expression[0] == "and") {
-            return this._result(expression[1]) && this._result(expression[2])
-        }
-        else if (expression[0] == "or") {
-            return this._result(expression[1]) || this._result(expression[2])
-        }
-        else if (expression[0] == "not") {
-            return !this._result(expression[1])
-        }
-        else if (expression[0] == "list") {
-            return this._evaluateList(expression.slice(1))
-        }
-        else if (expression[0] == "car") {
-            return this._result(expression[1])[0]
-        }
-        else if (expression[0] == "cdr") {
-            return this._result(expression[1]).slice(1)
+        if (typeof environment[expression[0]] === "undefined") {
+            throw "Operation '" + expression[0] + "' is not supported"
         }
         else {
-            throw "Operation '" + expression[0] + "' is not supported"
+            return environment[expression[0]](this._evaluateList(expression.slice(1)))
         }
     }
 
