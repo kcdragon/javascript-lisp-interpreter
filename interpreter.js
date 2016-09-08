@@ -41,7 +41,10 @@ class Interpreter {
     }
 
     result() {
-        return this._result(this.expression)
+        var interpreter = this
+        return this.expression.map(function (expression) {
+            return interpreter._result(expression)
+        })[this.expression.length - 1]
     }
 
     _result(expression) {

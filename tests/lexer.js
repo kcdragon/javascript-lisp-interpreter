@@ -32,3 +32,10 @@ QUnit.test("Lexer#tokens string with space", function(assert) {
         ["(", "string", "hello world", ")"]
     )
 });
+
+QUnit.test("Lexer#tokens multiple expressions", function(assert) {
+    assert.deepEqual(
+        new Lexer("(+ 1 1) (+ 1 1)").tokens(),
+        ["(", "+", 1, 1, ")", "(", "+", 1, 1, ")"]
+    )
+});
