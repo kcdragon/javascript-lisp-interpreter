@@ -66,32 +66,55 @@ class Interpreter {
     }
 
     _result(expression) {
-        console.log("expression: " + expression)
+        if (this._expressionIsAtom(expression)) {
+            return this._resultOfAtom(expression)
+        }
+        else {
+            return this._resultOfList(expression)
+        }
+    }
+
+    _expressionIsAtom(expression) {
+        return !(expression instanceof Array)
+    }
+
+    _resultOfAtom(expression) {
         if (typeof expression === "string") {
             return this.env[expression]
-        }
-        else if (expression instanceof Array) {
-            var operator = expression[0]
-
-            if (typeof operator !== "string") {
-                return this._result(operator)(expression.slice(1))
-            }
-            if (operator === "setq") {
-                return this.env[operator](expression.slice(1))
-            }
-            else if (operator === "lambda") {
-                return this.env[operator](expression.slice(1))
-            }
-            else if (typeof this.env[operator] === "undefined") {
-                throw "Operation '" + operator + "' is not supported"
-            }
-            else {
-                return this.env[operator](this._evaluateList(expression.slice(1)))
-            }
         }
         else {
             return expression
         }
+    }
+
+    _resultOfList(expression) {
+        var operator = expression[0]
+        var operatorFunction = this._operatorFunction(operator)
+
+        if (this._delayArgumentInterpretation(operator)) {
+            return operatorFunction(expression.slice(1))
+        }
+        else if (typeof operatorFunction === "undefined") {
+            throw "Operation '" + operator + "' is not supported"
+        }
+        else {
+            return operatorFunction(this._evaluateList(expression.slice(1)))
+        }
+    }
+
+    _operatorFunction(operator) {
+        if (typeof operator !== "string") {
+            return this._result(operator)
+        }
+        else {
+            return this.env[operator]
+        }
+    }
+
+    _delayArgumentInterpretation(operator) {
+        return typeof operator !== "string" ||
+            operator === "setq" ||
+            operator === "lambda"
     }
 
     _evaluateList(expression) {
