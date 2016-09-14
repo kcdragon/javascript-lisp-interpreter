@@ -104,7 +104,7 @@ class Interpreter {
                 var args = this._evaluateList(expression.slice(2))
                 var object = expression[1]
                 if (typeof this.global[object] !== "undefined") {
-                    return this.global[object][operator]()
+                    return this.global[object][operator](args[0])
                 }
                 else {
                     throw "Operation '" + operator + "' is not supported"

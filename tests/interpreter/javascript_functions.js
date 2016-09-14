@@ -69,3 +69,18 @@ QUnit.test("Interpreter#result can execute a JavaScript function defined on a Ob
         1
     )
 });
+
+array = new Array
+array.push(1)
+QUnit.test("Interpreter#result can execute a JavaScript function defined on a Object that takes an argument", function(assert) {
+    assert.equal(
+        new Interpreter(
+            [
+                ["indexOf", "array", 1]
+            ],
+            environment,
+            global
+        ).result(),
+        0
+    )
+});
