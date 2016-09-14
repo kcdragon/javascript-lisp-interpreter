@@ -53,9 +53,10 @@ environment["lambda"] = function (expression) {
 }
 
 class Interpreter {
-    constructor(expression, env = environment) {
+    constructor(expression, env = environment, global = this) {
         this.expression = expression
         this.env = env
+        this.global = global
     }
 
     result() {
@@ -95,7 +96,13 @@ class Interpreter {
             return operatorFunction(expression.slice(1))
         }
         else if (typeof operatorFunction === "undefined") {
-            throw "Operation '" + operator + "' is not supported"
+            if (typeof this.global[operator] === "undefined") {
+                throw "Operation '" + operator + "' is not supported"
+            }
+            else {
+                var args = this._evaluateList(expression.slice(1))
+                return this.global[operator](args[0], args[1])
+            }
         }
         else {
             return operatorFunction(this._evaluateList(expression.slice(1)))
