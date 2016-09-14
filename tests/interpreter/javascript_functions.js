@@ -54,3 +54,18 @@ QUnit.test("Interpreter#result can call a globally defined JavaScript function w
         3
     )
 });
+
+var array = new Array
+array.push(1)
+QUnit.test("Interpreter#result can execute a JavaScript function defined on a Object", function(assert) {
+    assert.equal(
+        new Interpreter(
+            [
+                ["pop", "array"]
+            ],
+            environment,
+            global
+        ).result(),
+        1
+    )
+});

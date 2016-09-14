@@ -96,12 +96,19 @@ class Interpreter {
             return operatorFunction(expression.slice(1))
         }
         else if (typeof operatorFunction === "undefined") {
-            if (typeof this.global[operator] === "undefined") {
-                throw "Operation '" + operator + "' is not supported"
-            }
-            else {
+            if (typeof this.global[operator] !== "undefined") {
                 var args = this._evaluateList(expression.slice(1))
                 return this.global[operator](args[0], args[1])
+            }
+            else {
+                var args = this._evaluateList(expression.slice(2))
+                var object = expression[1]
+                if (typeof this.global[object] !== "undefined") {
+                    return this.global[object][operator]()
+                }
+                else {
+                    throw "Operation '" + operator + "' is not supported"
+                }
             }
         }
         else {
