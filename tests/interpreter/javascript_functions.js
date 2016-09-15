@@ -99,3 +99,16 @@ QUnit.test("Interpreter#result can execute a JavaScript function defined on a Ob
         2
     )
 });
+
+QUnit.test("Interpreter#result throws error for unknown function", function(assert) {
+    assert.throws(
+        function () {
+            return new Interpreter(
+                [
+                    ["unknown", 1]
+                ]
+            ).result()
+        },
+        /Operation 'unknown' is not supported/
+    )
+});

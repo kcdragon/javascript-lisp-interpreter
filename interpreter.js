@@ -113,15 +113,16 @@ class Interpreter {
                 args = this._evaluateList(expression.slice(2))
                 return caller.apply(object, args)
             }
-            else {
-                object = this._result(object)
-                caller = object[operator]
+
+            object = this._result(object)
+            caller = object[operator]
+            if (typeof caller !== "undefined") {
                 args = this._evaluateList(expression.slice(2))
                 return caller.apply(object, args)
             }
-            // else {
-            //     throw "Operation '" + operator + "' is not supported"
-            // }
+            else {
+                throw "Operation '" + operator + "' is not supported"
+            }
         }
         else {
             return operatorFunction(this._evaluateList(expression.slice(1)))
