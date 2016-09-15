@@ -101,24 +101,27 @@ class Interpreter {
                 caller,
                 args;
 
-            if (this._isGlobalJavaScriptFunction(operator) || this._isGlobalJavaScriptObject(object)) {
-
-                if (this._isGlobalJavaScriptFunction(operator)) {
-                    caller = this.global[operator]
-                    object = null
-                    args = this._evaluateList(expression.slice(1))
-                }
-                else {
-                    caller = this.global[object][operator]
-                    object = this.global[object]
-                    args = this._evaluateList(expression.slice(2))
-                }
-
+            if (this._isGlobalJavaScriptFunction(operator)) {
+                caller = this.global[operator]
+                object = null
+                args = this._evaluateList(expression.slice(1))
+                return caller.apply(object, args)
+            }
+            else if (this._isGlobalJavaScriptObject(object)) {
+                caller = this.global[object][operator]
+                object = this.global[object]
+                args = this._evaluateList(expression.slice(2))
                 return caller.apply(object, args)
             }
             else {
-                throw "Operation '" + operator + "' is not supported"
+                object = this._result(object)
+                caller = object[operator]
+                args = this._evaluateList(expression.slice(2))
+                return caller.apply(object, args)
             }
+            // else {
+            //     throw "Operation '" + operator + "' is not supported"
+            // }
         }
         else {
             return operatorFunction(this._evaluateList(expression.slice(1)))
