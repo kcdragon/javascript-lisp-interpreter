@@ -96,19 +96,28 @@ class Interpreter {
             return operatorFunction(expression.slice(1))
         }
         else if (typeof operatorFunction === "undefined") {
-            if (typeof this.global[operator] !== "undefined") {
-                var args = this._evaluateList(expression.slice(1))
-                return this.global[operator](args[0], args[1])
-            }
-            else {
-                var args = this._evaluateList(expression.slice(2))
-                var object = expression[1]
-                if (typeof this.global[object] !== "undefined") {
-                    return this.global[object][operator](args[0])
+
+            var object = expression[1],
+                caller,
+                args;
+
+            if (this._isGlobalJavaScriptFunction(operator) || this._isGlobalJavaScriptObject(object)) {
+
+                if (this._isGlobalJavaScriptFunction(operator)) {
+                    caller = this.global[operator]
+                    object = null
+                    args = this._evaluateList(expression.slice(1))
                 }
                 else {
-                    throw "Operation '" + operator + "' is not supported"
+                    caller = this.global[object][operator]
+                    object = this.global[object]
+                    args = this._evaluateList(expression.slice(2))
                 }
+
+                return caller.apply(object, args)
+            }
+            else {
+                throw "Operation '" + operator + "' is not supported"
             }
         }
         else {
@@ -129,6 +138,14 @@ class Interpreter {
         return typeof operator !== "string" ||
             operator === "setq" ||
             operator === "lambda"
+    }
+
+    _isGlobalJavaScriptFunction(operator) {
+        return typeof this.global[operator] !== "undefined"
+    }
+
+    _isGlobalJavaScriptObject(object) {
+        return typeof this.global[object] !== "undefined"
     }
 
     _evaluateList(expression) {
