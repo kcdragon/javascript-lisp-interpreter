@@ -83,6 +83,9 @@ class Interpreter {
         if (typeof expression === "string") {
             return this.env[expression]
         }
+        else if (expression instanceof LispString) {
+            return expression.string
+        }
         else {
             return expression
         }
@@ -110,6 +113,12 @@ class Interpreter {
             else if (this._isGlobalJavaScriptObject(object)) {
                 caller = this.global[object][operator]
                 object = this.global[object]
+                args = this._evaluateList(expression.slice(2))
+                return caller.apply(object, args)
+            }
+            else if (object instanceof LispString) {
+                object = object.string
+                caller = object[operator]
                 args = this._evaluateList(expression.slice(2))
                 return caller.apply(object, args)
             }

@@ -2,10 +2,6 @@ class LispString {
     constructor(string) {
         this.string = string
     }
-
-    string() {
-        return this.string
-    }
 }
 
 class Lexer {

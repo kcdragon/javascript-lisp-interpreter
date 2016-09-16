@@ -112,3 +112,14 @@ QUnit.test("Interpreter#result throws error for unknown function", function(asse
         /Operation 'unknown' is not supported/
     )
 });
+
+QUnit.test("Interpreter#result can execute a JavaScript function defined on a String", function(assert) {
+    assert.equal(
+        new Interpreter(
+            [
+                ["indexOf", new LispString("hello"), new LispString("e")]
+            ]
+        ).result(),
+        1
+    )
+});
