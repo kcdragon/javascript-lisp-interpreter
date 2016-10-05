@@ -1,176 +1,176 @@
 var environment = {}
 environment["+"] = function (expression) {
-    return expression.reduce(function (sum, operand) {
-        return sum + operand
-    }, 0)
+  return expression.reduce(function (sum, operand) {
+    return sum + operand
+  }, 0)
 }
 environment["-"] = function (expression) {
-    return expression[0] - expression[1]
+  return expression[0] - expression[1]
 }
 environment["*"] = function (expression) {
-    return expression[0] * expression[1]
+  return expression[0] * expression[1]
 }
 environment["/"] = function (expression) {
-    return expression[0] / expression[1]
+  return expression[0] / expression[1]
 }
 environment["eql"] = function (expression) {
-    return expression[0] == expression[1]
+  return expression[0] == expression[1]
 }
 environment["and"] = function (expression) {
-    return expression[0] && expression[1]
+  return expression[0] && expression[1]
 }
 environment["or"] = function (expression) {
-    return expression[0] || expression[1]
+  return expression[0] || expression[1]
 }
 environment["not"] = function (expression) {
-    return !expression[0]
+  return !expression[0]
 }
 environment["list"] = function (expression) {
-    return expression
+  return expression
 }
 environment["car"] = function (expression) {
-    return expression[0][0]
+  return expression[0][0]
 }
 environment["cdr"] = function (expression) {
-    return expression[0].slice(1)
+  return expression[0].slice(1)
 }
 environment["setq"] = function (expression) {
-    environment[expression[0]] = new Interpreter([expression[1]]).result()
+  environment[expression[0]] = new Interpreter([expression[1]]).result()
 }
 environment["lambda"] = function (expression, env = environment) {
-    return function (args) {
-        if (!(args instanceof Array)) {
-            args = [args]
-        }
-
-      args = args.map(arg => new Interpreter([arg], env).result())
-
-        // TODO if args.length !== expression[0].length throw error
-
-        var localEnvironment = {}
-        Object.keys(env).forEach(function (key) {
-            localEnvironment[key] = environment[key]
-        })
-        args.forEach(function (arg, index) {
-            localEnvironment[expression[0][index]] = arg
-        })
-        return new Interpreter([expression[1]], localEnvironment).result()
+  return function (args) {
+    if (!(args instanceof Array)) {
+      args = [args]
     }
+
+    args = args.map(arg => new Interpreter([arg], env).result())
+
+    // TODO if args.length !== expression[0].length throw error
+
+    var localEnvironment = {}
+    Object.keys(env).forEach(function (key) {
+      localEnvironment[key] = environment[key]
+    })
+    args.forEach(function (arg, index) {
+      localEnvironment[expression[0][index]] = arg
+    })
+    return new Interpreter([expression[1]], localEnvironment).result()
+  }
 }
 
 class Interpreter {
-    constructor(expression, env = environment, global = this) {
-        this.expression = expression
-        this.env = env
-        this.global = global
+  constructor(expression, env = environment, global = this) {
+    this.expression = expression
+    this.env = env
+    this.global = global
+  }
+
+  result() {
+    var interpreter = this
+    return this.expression.map(function (expression) {
+      return interpreter._result(expression)
+    })[this.expression.length - 1]
+  }
+
+  _result(expression) {
+    if (this._expressionIsAtom(expression)) {
+      return this._resultOfAtom(expression)
     }
-
-    result() {
-        var interpreter = this
-        return this.expression.map(function (expression) {
-            return interpreter._result(expression)
-        })[this.expression.length - 1]
+    else {
+      return this._resultOfList(expression)
     }
+  }
 
-    _result(expression) {
-        if (this._expressionIsAtom(expression)) {
-            return this._resultOfAtom(expression)
-        }
-        else {
-            return this._resultOfList(expression)
-        }
+  _expressionIsAtom(expression) {
+    return !(expression instanceof Array)
+  }
+
+  _resultOfAtom(expression) {
+    if (typeof expression === "string") {
+      return this.env[expression]
     }
-
-    _expressionIsAtom(expression) {
-        return !(expression instanceof Array)
+    else if (expression instanceof LispString) {
+      return expression.string
     }
-
-    _resultOfAtom(expression) {
-        if (typeof expression === "string") {
-            return this.env[expression]
-        }
-        else if (expression instanceof LispString) {
-            return expression.string
-        }
-        else {
-            return expression
-        }
+    else {
+      return expression
     }
+  }
 
-    _resultOfList(expression) {
-        var operator = expression[0]
-        var operatorFunction = this._operatorFunction(operator)
+  _resultOfList(expression) {
+    var operator = expression[0]
+    var operatorFunction = this._operatorFunction(operator)
 
-        if (this._delayArgumentInterpretation(operator)) {
-            return operatorFunction(expression.slice(1), this.env)
-        }
-        else if (typeof operatorFunction === "undefined") {
-
-            var object = expression[1],
-                caller,
-                args;
-
-            if (this._isGlobalJavaScriptFunction(operator)) {
-                caller = this.global[operator]
-                object = null
-                args = this._evaluateList(expression.slice(1))
-                return caller.apply(object, args)
-            }
-            else if (this._isGlobalJavaScriptObject(object)) {
-                caller = this.global[object][operator]
-                object = this.global[object]
-                args = this._evaluateList(expression.slice(2))
-                return caller.apply(object, args)
-            }
-            else if (object instanceof LispString) {
-                object = object.string
-                caller = object[operator]
-                args = this._evaluateList(expression.slice(2))
-                return caller.apply(object, args)
-            }
-
-            object = this._result(object)
-            caller = object[operator]
-            if (typeof caller !== "undefined") {
-                args = this._evaluateList(expression.slice(2))
-                return caller.apply(object, args)
-            }
-            else {
-                throw "Operation '" + operator + "' is not supported"
-            }
-        }
-        else {
-            return operatorFunction(this._evaluateList(expression.slice(1)))
-        }
+    if (this._delayArgumentInterpretation(operator)) {
+      return operatorFunction(expression.slice(1), this.env)
     }
+    else if (typeof operatorFunction === "undefined") {
 
-    _operatorFunction(operator) {
-        if (typeof operator !== "string") {
-            return this._result(operator)
-        }
-        else {
-            return this.env[operator]
-        }
-    }
+      var object = expression[1],
+      caller,
+      args;
 
-    _delayArgumentInterpretation(operator) {
-        return typeof operator !== "string" ||
-            operator === "setq" ||
-            operator === "lambda"
-    }
+      if (this._isGlobalJavaScriptFunction(operator)) {
+        caller = this.global[operator]
+        object = null
+        args = this._evaluateList(expression.slice(1))
+        return caller.apply(object, args)
+      }
+      else if (this._isGlobalJavaScriptObject(object)) {
+        caller = this.global[object][operator]
+        object = this.global[object]
+        args = this._evaluateList(expression.slice(2))
+        return caller.apply(object, args)
+      }
+      else if (object instanceof LispString) {
+        object = object.string
+        caller = object[operator]
+        args = this._evaluateList(expression.slice(2))
+        return caller.apply(object, args)
+      }
 
-    _isGlobalJavaScriptFunction(operator) {
-        return typeof this.global[operator] !== "undefined"
+      object = this._result(object)
+      caller = object[operator]
+      if (typeof caller !== "undefined") {
+        args = this._evaluateList(expression.slice(2))
+        return caller.apply(object, args)
+      }
+      else {
+        throw "Operation '" + operator + "' is not supported"
+      }
     }
+    else {
+      return operatorFunction(this._evaluateList(expression.slice(1)))
+    }
+  }
 
-    _isGlobalJavaScriptObject(object) {
-        return typeof this.global[object] !== "undefined"
+  _operatorFunction(operator) {
+    if (typeof operator !== "string") {
+      return this._result(operator)
     }
+    else {
+      return this.env[operator]
+    }
+  }
 
-    _evaluateList(expression) {
-        var interpreter = this
-        return expression.map(function (expression) {
-            return interpreter._result(expression)
-        })
-    }
+  _delayArgumentInterpretation(operator) {
+    return typeof operator !== "string" ||
+      operator === "setq" ||
+      operator === "lambda"
+  }
+
+  _isGlobalJavaScriptFunction(operator) {
+    return typeof this.global[operator] !== "undefined"
+  }
+
+  _isGlobalJavaScriptObject(object) {
+    return typeof this.global[object] !== "undefined"
+  }
+
+  _evaluateList(expression) {
+    var interpreter = this
+    return expression.map(function (expression) {
+      return interpreter._result(expression)
+    })
+  }
 }
