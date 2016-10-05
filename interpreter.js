@@ -37,12 +37,18 @@ environment["cdr"] = function (expression) {
 environment["setq"] = function (expression) {
     environment[expression[0]] = new Interpreter([expression[1]]).result()
 }
-environment["lambda"] = function (expression) {
+environment["lambda"] = function (expression, env = environment) {
     return function (args) {
+        if (!(args instanceof Array)) {
+            args = [args]
+        }
+
+      args = args.map(arg => new Interpreter([arg], env).result())
+
         // TODO if args.length !== expression[0].length throw error
 
         var localEnvironment = {}
-        Object.keys(environment).forEach(function (key) {
+        Object.keys(env).forEach(function (key) {
             localEnvironment[key] = environment[key]
         })
         args.forEach(function (arg, index) {
@@ -96,7 +102,7 @@ class Interpreter {
         var operatorFunction = this._operatorFunction(operator)
 
         if (this._delayArgumentInterpretation(operator)) {
-            return operatorFunction(expression.slice(1))
+            return operatorFunction(expression.slice(1), this.env)
         }
         else if (typeof operatorFunction === "undefined") {
 

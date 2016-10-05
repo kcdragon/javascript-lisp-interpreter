@@ -124,6 +124,19 @@ QUnit.test("Interpreter#result 'setq' - assign variable", function(assert) {
     )
 });
 
+QUnit.test("Interpreter#result 'setq' - assign variable to another variable", function(assert) {
+  assert.equal(
+    new Interpreter(
+      [
+        ["setq", "a", 1],
+        ["setq", "b", "a"],
+        ["+", "b", 2]
+      ]
+    ).result(),
+    3
+  )
+});
+
 QUnit.test("Interpreter#result lambda function", function(assert) {
     assert.equal(
         typeof new Interpreter([["lambda", ["n"], ["+", "n", 1]]]).result(),
@@ -149,4 +162,22 @@ QUnit.test("Interpreter#result lambda scope", function(assert) {
         ).result(),
         3
     )
+});
+
+QUnit.test("Interpreter#result lambda nested scope", function(assert) {
+  assert.equal(
+    new Interpreter(
+      [
+        [
+          [
+            "lambda",
+            ["n"],
+            ["+", 1, [["lambda", ["m"], ["+", "m", 1]], "n"]]
+          ],
+          1
+        ]
+      ]
+    ).result(),
+    3
+  )
 });
