@@ -39,14 +39,6 @@ environment["setq"] = function (expression) {
 }
 environment["lambda"] = function (expression, env = environment) {
   return function (args) {
-    if (!(args instanceof Array)) {
-      args = [args]
-    }
-
-    args = args.map(arg => new Interpreter([arg], env).result())
-
-    // TODO if args.length !== expression[0].length throw error
-
     var localEnvironment = {}
     Object.keys(env).forEach(function (key) {
       localEnvironment[key] = environment[key]
@@ -59,17 +51,16 @@ environment["lambda"] = function (expression, env = environment) {
 }
 
 class Interpreter {
-  constructor(expression, env = environment, global = this) {
-    this.expression = expression
+  constructor(expressions, env = environment) {
+    this.expressions = expressions
     this.env = env
-    this.global = global
   }
 
   result() {
     var interpreter = this
-    return this.expression.map(function (expression) {
+    return this.expressions.map(function (expression) {
       return interpreter._result(expression)
-    })[this.expression.length - 1]
+    })[this.expressions.length - 1]
   }
 
   _result(expression) {
@@ -105,39 +96,8 @@ class Interpreter {
       return operatorFunction(expression.slice(1), this.env)
     }
     else if (typeof operatorFunction === "undefined") {
+      throw "Operation '" + operator + "' is not supported"
 
-      var object = expression[1],
-      caller,
-      args;
-
-      if (this._isGlobalJavaScriptFunction(operator)) {
-        caller = this.global[operator]
-        object = null
-        args = this._evaluateList(expression.slice(1))
-        return caller.apply(object, args)
-      }
-      else if (this._isGlobalJavaScriptObject(object)) {
-        caller = this.global[object][operator]
-        object = this.global[object]
-        args = this._evaluateList(expression.slice(2))
-        return caller.apply(object, args)
-      }
-      else if (object instanceof LispString) {
-        object = object.string
-        caller = object[operator]
-        args = this._evaluateList(expression.slice(2))
-        return caller.apply(object, args)
-      }
-
-      object = this._result(object)
-      caller = object[operator]
-      if (typeof caller !== "undefined") {
-        args = this._evaluateList(expression.slice(2))
-        return caller.apply(object, args)
-      }
-      else {
-        throw "Operation '" + operator + "' is not supported"
-      }
     }
     else {
       return operatorFunction(this._evaluateList(expression.slice(1)))
@@ -154,17 +114,8 @@ class Interpreter {
   }
 
   _delayArgumentInterpretation(operator) {
-    return typeof operator !== "string" ||
-      operator === "setq" ||
+    return operator === "setq" ||
       operator === "lambda"
-  }
-
-  _isGlobalJavaScriptFunction(operator) {
-    return typeof this.global[operator] !== "undefined"
-  }
-
-  _isGlobalJavaScriptObject(object) {
-    return typeof this.global[object] !== "undefined"
   }
 
   _evaluateList(expression) {
