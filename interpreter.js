@@ -1,66 +1,66 @@
-var environment = {}
-environment["+"] = function (expression) {
-  return expression.reduce(function (sum, operand) {
-    return sum + operand
-  }, 0)
+var builtInLispFunctions = {}
+builtInLispFunctions["+"] = function (expression) {
+  return expression[0] + expression[1]
 }
-environment["-"] = function (expression) {
+builtInLispFunctions["-"] = function (expression) {
   return expression[0] - expression[1]
 }
-environment["*"] = function (expression) {
+builtInLispFunctions["*"] = function (expression) {
   return expression[0] * expression[1]
 }
-environment["/"] = function (expression) {
+builtInLispFunctions["/"] = function (expression) {
   return expression[0] / expression[1]
 }
-environment["eql"] = function (expression) {
+builtInLispFunctions["eql"] = function (expression) {
   return expression[0] == expression[1]
 }
-environment["and"] = function (expression) {
+builtInLispFunctions["and"] = function (expression) {
   return expression[0] && expression[1]
 }
-environment["or"] = function (expression) {
+builtInLispFunctions["or"] = function (expression) {
   return expression[0] || expression[1]
 }
-environment["not"] = function (expression) {
+builtInLispFunctions["not"] = function (expression) {
   return !expression[0]
 }
-environment["list"] = function (expression) {
+builtInLispFunctions["list"] = function (expression) {
   return expression
 }
-environment["car"] = function (expression) {
+builtInLispFunctions["car"] = function (expression) {
   return expression[0][0]
 }
-environment["cdr"] = function (expression) {
+builtInLispFunctions["cdr"] = function (expression) {
   return expression[0].slice(1)
 }
-environment["setq"] = function (expression) {
-  environment[expression[0]] = new Interpreter([expression[1]]).result()
+builtInLispFunctions["setq"] = function (expression) {
+  builtInLispFunctions[expression[0]] = new Interpreter([expression[1]]).result()
 }
-environment["lambda"] = function (expression, env = environment) {
+builtInLispFunctions["lambda"] = function (expression, environment = builtInLispFunctions) {
+  var lambdaArgumentNames = expression[0]
+
   return function (args) {
-    var localEnvironment = {}
-    Object.keys(env).forEach(function (key) {
-      localEnvironment[key] = environment[key]
+    var localEnvironment = _.clone(environment)
+
+    _.zip(lambdaArgumentNames, args).forEach(argumentNameValuePair => {
+      var argumentName = argumentNameValuePair[0]
+      var argumentValue = argumentNameValuePair[1]
+      localEnvironment[argumentName] = argumentValue
     })
-    args.forEach(function (arg, index) {
-      localEnvironment[expression[0][index]] = arg
-    })
+
     return new Interpreter([expression[1]], localEnvironment).result()
   }
 }
 
 class Interpreter {
-  constructor(expressions, env = environment) {
+  constructor(expressions, environment = builtInLispFunctions) {
     this.expressions = expressions
-    this.env = env
+    this.environment = environment
   }
 
   result() {
-    var interpreter = this
-    return this.expressions.map(function (expression) {
-      return interpreter._result(expression)
-    })[this.expressions.length - 1]
+    return this.expressions.map(
+      expression => this._result(expression)
+    )[this.expressions.length - 1]
   }
 
   _result(expression) {
@@ -73,12 +73,16 @@ class Interpreter {
   }
 
   _expressionIsAtom(expression) {
-    return !(expression instanceof Array)
+    return !this._expressionIsList(expression)
+  }
+
+  _expressionIsList(expression) {
+    return expression instanceof Array
   }
 
   _resultOfAtom(expression) {
-    if (typeof expression === "string") {
-      return this.env[expression]
+    if (this._isStringSymbol(expression)) {
+      return this.environment[expression]
     }
     else if (expression instanceof LispString) {
       return expression.string
@@ -92,36 +96,45 @@ class Interpreter {
     var operator = expression[0]
     var operatorFunction = this._operatorFunction(operator)
 
-    if (this._delayArgumentInterpretation(operator)) {
-      return operatorFunction(expression.slice(1), this.env)
+    if (typeof operatorFunction === "undefined") {
+      this._throwUnknownOperatorError(operator);
     }
-    else if (typeof operatorFunction === "undefined") {
-      throw "Operation '" + operator + "' is not supported"
 
+    var args;
+    if (this._delayArgumentInterpretation(operator)) {
+      args = expression.slice(1)
     }
     else {
-      return operatorFunction(this._evaluateList(expression.slice(1)))
+      args = this._evaluateList(expression.slice(1))
     }
+
+    return operatorFunction(args, this.environment)
   }
 
   _operatorFunction(operator) {
-    if (typeof operator !== "string") {
+    if (this._isStringSymbol(operator)) {
+      return this.environment[operator]
+    }
+    else if (this._expressionIsList(operator)) {
       return this._result(operator)
     }
-    else {
-      return this.env[operator]
-    }
+  }
+
+  _throwUnknownOperatorError(operator) {
+    throw "Operation '" + operator + "' is not supported"
   }
 
   _delayArgumentInterpretation(operator) {
-    return operator === "setq" ||
-      operator === "lambda"
+    return operator === "setq" || operator === "lambda"
   }
 
   _evaluateList(expression) {
-    var interpreter = this
-    return expression.map(function (expression) {
-      return interpreter._result(expression)
-    })
+    return expression.map(
+      expression => this._result(expression)
+    )
+  }
+
+  _isStringSymbol(value) {
+    return (typeof value) === "string"
   }
 }
