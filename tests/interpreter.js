@@ -77,6 +77,17 @@ QUnit.test("Interpreter#result 'not' operator", function(assert) {
   )
 });
 
+QUnit.test("Interpreter#result 'if' operator", function(assert) {
+  assert.equal(
+    new Interpreter([["if", ["eql", 1, 1], 2, 3]]).result(),
+    2
+  )
+  assert.equal(
+    new Interpreter([["if", ["eql", 1, 2], 2, 3]]).result(),
+    3
+  )
+});
+
 QUnit.test("Interpreter#result 'list' operator", function(assert) {
   assert.deepEqual(
     new Interpreter([["list", 1, 2, 3]]).result(),

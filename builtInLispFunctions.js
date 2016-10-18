@@ -24,6 +24,15 @@ function newBuiltInLispFunctions() {
   builtInLispFunctions["not"] = function (expression) {
     return !expression[0]
   }
+  builtInLispFunctions["if"] = function (expression) {
+    var conditional = expression[0]
+    if (conditional) {
+      return expression[1]
+    }
+    else {
+      return expression[2]
+    }
+  }
   builtInLispFunctions["list"] = function (expression) {
     return expression
   }
