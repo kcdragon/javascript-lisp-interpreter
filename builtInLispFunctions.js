@@ -1,7 +1,12 @@
 function newBuiltInLispFunctions() {
+    var resultOfExpression = function(expression) {
+        return new Interpreter([expression]).result()
+    }
+
   var builtInLispFunctions = {}
   builtInLispFunctions["+"] = function (expression) {
-    return expression[0] + expression[1]
+    let operands =  expression.map(argument => resultOfExpression(argument))
+    return operands[0] + operands[1]
   }
   builtInLispFunctions["-"] = function (expression) {
     return expression[0] - expression[1]
