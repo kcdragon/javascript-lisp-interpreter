@@ -23,13 +23,13 @@ class Lexer {
   }
 
   _removeEmptyTokens(tokens) {
-    return _.filter(tokens, function (token) {
+    return tokens.filter(function (token) {
       return !token.match(/^\s*$/)
     })
   }
 
   _removeDoubleQuotesFromStrings(tokens) {
-    return _.map(tokens, function (token) {
+    return tokens.map(function (token) {
       if (token.match && token.match(/^".*"$/)) {
         return new LispString(token.replace(/^"/, '').replace(/"$/, ''))
       }
@@ -40,7 +40,7 @@ class Lexer {
   }
 
   _castNumbersToFloats(tokens) {
-    return _.map(tokens, function (token) {
+    return tokens.map(function (token) {
       if (token.match(/^\d+(\.\d+)?$/)) {
         return parseFloat(token)
       }
